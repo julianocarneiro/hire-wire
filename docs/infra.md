@@ -11,7 +11,7 @@ Stack mínima com **dois** serviços: container da aplicação PHP/Laravel (`app
 
 | Serviço | Imagem / build | Descrição |
 |---------|----------------|-----------|
-| `db` | `postgres:16-alpine` | PostgreSQL; dados no volume nomeado `postgres_data` |
+| `db` | `postgres:16-alpine` | PostgreSQL; dados em **`./docker-data/postgres`** no host (bind mount, persistente) |
 | `app` | build a partir do `Dockerfile` na raiz | PHP 8.3 CLI + Composer; comando padrão `php artisan serve --host=0.0.0.0 --port=8000` |
 
 | Onde | Porta |
@@ -24,6 +24,14 @@ Na rede interna do Compose, o Laravel no container usa **`db`** na porta **5432*
 Se você rodar o Laravel **fora** do Docker e apontar para o Postgres do Compose, use `DB_HOST=127.0.0.1` e `DB_PORT=5433` no `src/.env`.
 
 O serviço `app` usa `depends_on` com **`condition: service_healthy`** no `db`, para o Postgres aceitar conexões antes do container da aplicação subir. O `db` expõe um *healthcheck* com `pg_isready`.
+
+### Persistência do PostgreSQL
+
+- Os ficheiros do cluster ficam na pasta **`docker-data/postgres/`** na raiz do repositório (criada automaticamente no primeiro `docker compose up`).
+- Essa pasta está no **`.gitignore`** (não entra no Git).
+- `docker compose down` **não** apaga esses ficheiros; ao subir de novo, o mesmo banco é reutilizado.
+- `docker compose down -v` remove **volumes declarados** no Compose; como o Postgres já **não** usa volume nomeado, os dados **continuam** em `docker-data/postgres/`. Para **zerar o banco de propósito**, pare os containers e apague a pasta `docker-data/postgres` no host (ou só o seu conteúdo), depois suba de novo e rode `migrate`.
+- Se antes usava o volume Docker `postgres_data` e mudou para este layout, o Compose passa a usar só `docker-data/` — o volume antigo pode ficar órfão no Docker até `docker volume prune`. Os dados antigos continuam nesse volume até o remover manualmente; para migrar, use `pg_dump` / `pg_restore` ou aceite uma base nova em `docker-data/`.
 
 ## Variáveis no `docker-compose.yml`
 
@@ -120,11 +128,20 @@ docker compose logs -f
 docker compose down
 ```
 
-Para remover também o volume de dados do Postgres (**apaga o banco**):
+Se o serviço **`app`** aparecer como **`Created`** em `docker compose ps -a` mas não **`Up`**, o Laravel não está a servir na porta 8000. Suba (ou recrie) o serviço:
 
 ```bash
-docker compose down -v
+docker compose up -d app
 ```
+
+`docker compose down -v` remove volumes **nomeados** ainda definidos no Compose (neste projeto, tipicamente nenhum associado ao Postgres). Os dados do Postgres ficam em **`docker-data/postgres/`**; para **apagar o banco por completo**, remova essa pasta no explorador de ficheiros ou, na raiz do repositório:
+
+```bash
+docker compose down
+rm -rf docker-data/postgres
+```
+
+(No PowerShell no Windows: `Remove-Item -Recurse -Force docker-data\postgres`.)
 
 ## Frontend (Vue.js)
 

@@ -85,8 +85,39 @@ https://github.com/julianocarneiro/hire-wire
 
 ## Fase 8: Movimentação da conta
 
-- **Tela de movimentações** (`/bank-accounts/{id}/movimentacoes`): interface com **três abas (tabs)** — navegação clara, estado da aba ativa acessível (teclado / ARIA), alinhada ao tema claro/escuro.
-- **Aba «Depósito»:** formulário para registar depósito (valor, validações e submissão ao backend); feedback de sucesso/erro; atualização coerente do saldo partilhado quando aplicável.
-- **Aba «Movimentação + saldo»:** listagem ou resumo das **movimentações** da conta **junto com** o **saldo** atual (ou evolução), de leitura prioritária para o utilizador.
-- **Aba «Correção monetária»:** formulário ou fluxo dedicado à **correção monetária** (regra de negócio e persistência a definir em domínio/API); validação e autorização por utilizador/conta.
-- **Backend / domínio:** modelos ou agregados para movimentos, depósitos e correções; repositórios e políticas que garantam isolamento por `user_id` / conta; rotas e testes de feature alinhados à Fase 5 (autorização).
+✅ **Especificação:** [account_movements.spec.md](account_movements.spec.md) (regras alinhadas ao [README.md](../README.md)).
+✅ **Tela de movimentações** (`/bank-accounts/{id}/movimentacoes`): interface com **três abas (tabs)** — navegação clara, estado da aba ativa acessível (teclado / ARIA), alinhada ao tema claro/escuro.
+✅ **Aba «Depósito»:** formulário para registar depósito (valor, validações e submissão ao backend); feedback de sucesso/erro; atualização coerente do saldo partilhado quando aplicável.
+✅ **Aba «Movimentação + saldo»:** listagem ou resumo das **movimentações** da conta **junto com** o **saldo** atual (ou evolução), de leitura prioritária para o utilizador.
+✅ **Aba «Correção monetária»:** formulário ou fluxo dedicado à **correção monetária** (regra de negócio e persistência a definir em domínio/API); validação e autorização por utilizador/conta.
+✅ **Backend / domínio:** modelos ou agregados para movimentos, depósitos e correções; repositórios e políticas que garantam isolamento por `user_id` / conta; rotas e testes de feature alinhados à Fase 5 (autorização).
+✅ **Testes:** `BankAccountMovementsTest` + asserção `movements` em `BankAccountCrudTest`.
+
+## Fase 9: Organização, otimização, componentização e mais testes
+
+### Organização
+
+- Rever **estrutura de pastas** (`App\Domain`, `App\Application`, `App\Infrastructure`, `Http`) e alinhar nomes de ficheiros às convenções já documentadas em [paterns](paterns/).
+- **Rotas e controllers:** agrupar ou documentar no código (PHPDoc breve) responsabilidades por recurso; avaliar controller dedicado a movimentações se `BankAccountController` crescer demais.
+- **Front-end:** convenção para `Components/` vs `Pages/` (componentes reutilizáveis vs ecrãs Inertia); extrair constantes partilhadas (etiquetas, rotas) onde fizer sentido.
+- **Documentação:** atualizar [README.md](../README.md) ou [docs/infra.md](infra.md) se o fluxo de desenvolvimento mudar; manter `tasks.md` sincronizado com o estado real do projeto.
+
+### Otimização
+
+- **Base de dados:** rever consultas em repositórios Eloquent (índices em `user_id`, `bank_account_id`, `created_at` onde a listagem for frequente); evitar N+1 se surgirem relações carregadas em listas.
+- **HTTP / Inertia:** payload mínimo nas props; evitar duplicar dados já presentes em `shared` quando possível.
+- **Front (Vite):** `npm run build` e análise de bundle (tamanho de chunks); lazy-loading de páginas Inertia (`resolve` com import dinâmico) se o número de páginas crescer.
+- **Back:** cache de leitura só onde houver ganho mensurável e invalidação clara (evitar prematuramente).
+
+### Componentização
+
+- Extrair **componentes Vue** reutilizáveis: por exemplo cabeçalho de conta (tipo + saldo), tabela de movimentos, bloco de tabs acessível, botões de ação alinhados ao tema.
+- Extrair **composables** (`useBankAccountLabels`, `useCurrencyFormat`, `useAccountTabs`) para reduzir duplicação entre `BankAccountShow`, `BankAccountMovements` e sidebar.
+- Opcional: componente **genérico de tabs** (ARIA) reutilizável em futuras telas.
+
+### Mais testes
+
+- **Feature:** fluxos completos Inertia (depósito + correção na mesma conta; lista de movimentos após várias operações); utilizador não autenticado em `POST` depósito/correção; throttle (smoke).
+- **Unit / integração:** `BankAccountMovementService` ou repositório de movimentos com dependências isoladas (mock do repositório de contas, se aplicável).
+- **Domínio:** casos-limite adicionais (`Money`, políticas) se surgirem novas regras.
+- **Opcional:** testes de browser (Playwright/Laravel Dusk) para login + criação de conta + depósito; ou Vitest para composables Vue.

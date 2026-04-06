@@ -26,6 +26,14 @@ Route::middleware('auth')->group(function () {
     Route::get('bank-accounts/{id}/movimentacoes', [BankAccountController::class, 'movements'])
         ->whereNumber('id')
         ->name('bank-accounts.movements');
+    Route::post('bank-accounts/{id}/deposito', [BankAccountController::class, 'deposit'])
+        ->middleware('throttle:20,1')
+        ->whereNumber('id')
+        ->name('bank-accounts.deposit');
+    Route::post('bank-accounts/{id}/correcao-monetaria', [BankAccountController::class, 'applyMonthlyAdjustment'])
+        ->middleware('throttle:20,1')
+        ->whereNumber('id')
+        ->name('bank-accounts.monthly-adjustment');
     Route::get('bank-accounts/{id}', [BankAccountController::class, 'show'])
         ->whereNumber('id')
         ->name('bank-accounts.show');

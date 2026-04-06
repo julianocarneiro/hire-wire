@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBankAccountRequest extends FormRequest
+class ApplyMonthlyAdjustmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -17,8 +17,6 @@ class UpdateBankAccountRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'balance' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
-        ];
+        return [];
     }
 }

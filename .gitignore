@@ -1,0 +1,2 @@
+# Dados do PostgreSQL (Docker bind mount em ./docker-data/postgres)
+docker-data/

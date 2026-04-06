@@ -108,6 +108,7 @@ class BankAccountCrudTest extends TestCase
                 ->component('Dashboard/BankAccountMovements')
                 ->where('account.id', $account->id)
                 ->where('account.type', 'savings')
+                ->has('movements')
             );
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Domain\Banking\ValueObjects\AccountType;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +15,7 @@ class StoreBankAccountRequest extends FormRequest
     }
 
     /**
-     * @return array<string, list<string|\Illuminate\Contracts\Validation\ValidationRule>>
+     * @return array<string, list<string|ValidationRule>>
      */
     public function rules(): array
     {

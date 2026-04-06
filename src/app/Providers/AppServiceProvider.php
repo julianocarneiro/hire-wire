@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domain\Banking\Repositories\AccountMovementRepositoryInterface;
 use App\Domain\Banking\Repositories\BankAccountRepositoryInterface;
+use App\Infrastructure\Banking\EloquentAccountMovementRepository;
 use App\Infrastructure\Banking\EloquentBankAccountRepository;
 use Carbon\CarbonInterval;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(BankAccountRepositoryInterface::class, EloquentBankAccountRepository::class);
+        $this->app->bind(AccountMovementRepositoryInterface::class, EloquentAccountMovementRepository::class);
     }
 
     /**

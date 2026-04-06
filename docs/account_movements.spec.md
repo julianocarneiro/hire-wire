@@ -188,9 +188,11 @@ Se no futuro for exigida **no máximo uma correção por (conta, mês)**, pode a
 
 ## 11. Checklist de revisão
 
-- [ ] Depósito e correção usam apenas políticas/entidades de domínio existentes para alterar saldo.
-- [ ] Transação + `lockForUpdate` na conta antes de mutar saldo.
-- [ ] Movimentos gravados com `balance_after` e `type` consistentes.
-- [ ] Nenhum vazamento de dados entre utilizadores (403/404 conforme padrão do projeto).
-- [ ] Abas com ARIA e teclado; tema com tokens.
-- [ ] Testes de feature cobrem casos felizes, validação e isolamento.
+- [x] Depósito e correção usam apenas políticas/entidades de domínio existentes para alterar saldo.
+- [x] Transação + `lockForUpdate` na conta antes de mutar saldo.
+- [x] Movimentos gravados com `balance_after` e `type` consistentes.
+- [x] Nenhum vazamento de dados entre utilizadores (403/404 conforme padrão do projeto).
+- [x] Abas com ARIA e teclado; tema com tokens.
+- [x] Testes de feature cobrem casos felizes, validação e isolamento.
+
+**Implementação:** `App\Application\Banking\BankAccountMovementService`, `AccountMovementRepositoryInterface` / `EloquentAccountMovementRepository`, rotas `bank-accounts.deposit` e `bank-accounts.monthly-adjustment`, página `Dashboard/BankAccountMovements.vue`, testes em `tests/Feature/BankAccountMovementsTest.php`.

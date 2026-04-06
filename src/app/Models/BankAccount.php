@@ -6,6 +6,7 @@ use Database\Factories\BankAccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -30,5 +31,13 @@ class BankAccount extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return HasMany<AccountMovement, $this>
+     */
+    public function movements(): HasMany
+    {
+        return $this->hasMany(AccountMovement::class);
     }
 }

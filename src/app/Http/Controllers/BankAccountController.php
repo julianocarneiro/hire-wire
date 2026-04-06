@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Banking\BankAccountMovementService;
 use App\Domain\Banking\Factories\BankAccountEntityFactory;
+use App\Domain\Banking\Repositories\AccountMovementRepositoryInterface;
 use App\Domain\Banking\Repositories\BankAccountRepositoryInterface;
 use App\Domain\Banking\ValueObjects\AccountType;
 use App\Domain\Banking\ValueObjects\BankAccountId;
 use App\Domain\Banking\ValueObjects\Money;
 use App\Domain\Banking\ValueObjects\UserId;
+use App\Http\Requests\ApplyMonthlyAdjustmentRequest;
 use App\Http\Requests\StoreBankAccountRequest;
+use App\Http\Requests\StoreDepositRequest;
 use App\Http\Requests\UpdateBankAccountRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,12 +41,16 @@ class BankAccountController extends Controller
         ]);
     }
 
-    public function movements(Request $request, int $id, BankAccountRepositoryInterface $accounts): Response
-    {
-        $entity = $accounts->findByIdForUser(
-            new BankAccountId($id),
-            new UserId((int) $request->user()->id),
-        );
+    public function movements(
+        Request $request,
+        int $id,
+        BankAccountRepositoryInterface $accounts,
+        AccountMovementRepositoryInterface $movements,
+    ): Response {
+        $userId = new UserId((int) $request->user()->id);
+        $accountId = new BankAccountId($id);
+
+        $entity = $accounts->findByIdForUser($accountId, $userId);
 
         if ($entity === null) {
             abort(404);
@@ -54,7 +62,38 @@ class BankAccountController extends Controller
                 'type' => $entity->type()->value,
                 'balance' => $entity->balance()->toDecimal(),
             ],
+            'movements' => $movements->listForAccount($accountId, $userId),
         ]);
+    }
+
+    public function deposit(
+        StoreDepositRequest $request,
+        int $id,
+        BankAccountMovementService $service,
+    ): RedirectResponse {
+        $amount = $request->validated('amount');
+        $service->recordDeposit(
+            new BankAccountId($id),
+            new UserId((int) $request->user()->id),
+            is_float($amount) || is_int($amount)
+                ? number_format((float) $amount, 2, '.', '')
+                : (string) $amount,
+        );
+
+        return back();
+    }
+
+    public function applyMonthlyAdjustment(
+        ApplyMonthlyAdjustmentRequest $request,
+        int $id,
+        BankAccountMovementService $service,
+    ): RedirectResponse {
+        $service->applyMonthlyAdjustment(
+            new BankAccountId($id),
+            new UserId((int) $request->user()->id),
+        );
+
+        return back();
     }
 
     public function store(StoreBankAccountRequest $request, BankAccountRepositoryInterface $accounts): RedirectResponse

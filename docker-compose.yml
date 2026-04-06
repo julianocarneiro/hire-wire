@@ -1,12 +1,16 @@
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: hire_wire
       POSTGRES_USER: hire_wire
       POSTGRES_PASSWORD: hire_wire_secret
+    # Dados no disco do host (pasta na raiz do repositório). Persiste entre `docker compose down`
+    # e não é apagado por `docker compose down -v` (esse comando remove volumes nomeados no Compose,
+    # não esta pasta). Está listada no `.gitignore`.
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./docker-data/postgres:/var/lib/postgresql/data
     # Host:container — use localhost:5433 no DBeaver/psql no Windows se 5432 já estiver ocupado.
     ports:
       - "5433:5432"
@@ -18,6 +22,7 @@ services:
 
   app:
     build: .
+    restart: unless-stopped
     working_dir: /var/www/html
     volumes:
       - ./src:/var/www/html
@@ -34,6 +39,3 @@ services:
       db:
         condition: service_healthy
     command: php artisan serve --host=0.0.0.0 --port=8000
-
-volumes:
-  postgres_data:

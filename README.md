@@ -114,7 +114,7 @@ O diretório **[src/](src/)** do repositório é montado em `/var/www/html` no s
 
 5. API em **http://localhost:8000** (`php artisan serve` no serviço `app`). O Postgres fica exposto em **localhost:5433** no host (mapeamento no `docker-compose.yml`; evita conflito com outro Postgres na 5432).
 
-Comandos úteis: `docker compose logs -f`, `docker compose down`. Para apagar também os dados do banco: `docker compose down -v`.
+Comandos úteis: `docker compose logs -f`, `docker compose down`. Os dados do PostgreSQL persistem na pasta **`docker-data/postgres/`** no repositório (bind mount; ver [docs/infra.md](docs/infra.md)). Para zerar o banco, apague essa pasta com os containers parados — `docker compose down -v` já não remove esses ficheiros.
 
 Mais detalhes em [docs/infra.md](docs/infra.md).
 
