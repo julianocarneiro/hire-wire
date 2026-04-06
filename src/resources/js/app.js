@@ -3,7 +3,7 @@ import './bootstrap';
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || '...::: Hire Wire :::...';
 
 createInertiaApp({
     title: (title) => (title ? `${title} — ${appName}` : appName),
@@ -11,7 +11,7 @@ createInertiaApp({
         const pages = import.meta.glob('./Pages/**/*.vue');
         const path = `./Pages/${name}.vue`;
         const importer = pages[path];
-        if (! importer) {
+        if (!importer) {
             throw new Error(`Unknown page: ${name}.`);
         }
 

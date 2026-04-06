@@ -82,3 +82,11 @@ https://github.com/julianocarneiro/hire-wire
 ✅ **Modal «Nova conta»:** `NewBankAccountModal.vue` — select de tipo, saldo inicial opcional, `POST` via Inertia; ao sucesso fecha o modal e renova dados partilhados.
 ✅ **Detalhe da conta:** `BankAccountShow.vue` — formulário de saldo (`PATCH`), secção eliminar (`DELETE` com confirmação, redirect ao dashboard).
 ✅ **Testes:** `BankAccountCrudTest` (props no dashboard, CRUD, duplicado de tipo, isolamento entre utilizadores); `BankAccountTest` atualizado para factory + asserções das subclasses.
+
+## Fase 8: Movimentação da conta
+
+- **Tela de movimentações** (`/bank-accounts/{id}/movimentacoes`): interface com **três abas (tabs)** — navegação clara, estado da aba ativa acessível (teclado / ARIA), alinhada ao tema claro/escuro.
+- **Aba «Depósito»:** formulário para registar depósito (valor, validações e submissão ao backend); feedback de sucesso/erro; atualização coerente do saldo partilhado quando aplicável.
+- **Aba «Movimentação + saldo»:** listagem ou resumo das **movimentações** da conta **junto com** o **saldo** atual (ou evolução), de leitura prioritária para o utilizador.
+- **Aba «Correção monetária»:** formulário ou fluxo dedicado à **correção monetária** (regra de negócio e persistência a definir em domínio/API); validação e autorização por utilizador/conta.
+- **Backend / domínio:** modelos ou agregados para movimentos, depósitos e correções; repositórios e políticas que garantam isolamento por `user_id` / conta; rotas e testes de feature alinhados à Fase 5 (autorização).

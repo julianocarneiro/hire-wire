@@ -37,6 +37,26 @@ class BankAccountController extends Controller
         ]);
     }
 
+    public function movements(Request $request, int $id, BankAccountRepositoryInterface $accounts): Response
+    {
+        $entity = $accounts->findByIdForUser(
+            new BankAccountId($id),
+            new UserId((int) $request->user()->id),
+        );
+
+        if ($entity === null) {
+            abort(404);
+        }
+
+        return Inertia::render('Dashboard/BankAccountMovements', [
+            'account' => [
+                'id' => $entity->id()->value,
+                'type' => $entity->type()->value,
+                'balance' => $entity->balance()->toDecimal(),
+            ],
+        ]);
+    }
+
     public function store(StoreBankAccountRequest $request, BankAccountRepositoryInterface $accounts): RedirectResponse
     {
         $validated = $request->validated();

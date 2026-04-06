@@ -12,7 +12,8 @@
 
             <section
                 v-if="account"
-                class="rounded-lg border border-border bg-surface p-4 shadow-sm dark:shadow-none"
+                id="editar-conta"
+                class="scroll-mt-24 rounded-lg border border-border bg-surface p-4 shadow-sm dark:shadow-none"
             >
                 <h2 class="text-sm font-semibold text-text">Atualizar saldo</h2>
                 <p class="mt-1 text-xs text-text-muted">
@@ -42,22 +43,22 @@
                         class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-fg hover:opacity-90 disabled:opacity-60"
                         :disabled="balanceForm.processing"
                     >
-                        Guardar saldo
+                        Atualizar saldo
                     </button>
                 </form>
             </section>
 
             <section v-if="account" class="rounded-lg border border-red-200 bg-page p-4 dark:border-red-900/50">
-                <h2 class="text-sm font-semibold text-red-800 dark:text-red-300">Eliminar conta</h2>
+                <h2 class="text-sm font-semibold text-red-800 dark:text-red-300">Deletar conta</h2>
                 <p class="mt-1 text-xs text-text-muted">
-                    Remove esta conta da sua área. Esta ação não pode ser desfeita aqui.
+                    Desenja realmente remover esta conta. Esta ação não pode ser desfeita.
                 </p>
                 <button
                     type="button"
                     class="mt-3 rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/40"
                     @click="confirmDestroy"
                 >
-                    Eliminar conta
+                    Deletar conta
                 </button>
             </section>
         </div>
@@ -104,7 +105,7 @@ function formatBalance(b) {
     if (Number.isNaN(n)) {
         return b;
     }
-    return n.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 function submitBalance() {

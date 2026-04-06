@@ -23,6 +23,9 @@ Route::middleware('auth')->group(function () {
     Route::post('bank-accounts', [BankAccountController::class, 'store'])
         ->middleware('throttle:20,1')
         ->name('bank-accounts.store');
+    Route::get('bank-accounts/{id}/movimentacoes', [BankAccountController::class, 'movements'])
+        ->whereNumber('id')
+        ->name('bank-accounts.movements');
     Route::get('bank-accounts/{id}', [BankAccountController::class, 'show'])
         ->whereNumber('id')
         ->name('bank-accounts.show');

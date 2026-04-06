@@ -93,6 +93,35 @@ class BankAccountCrudTest extends TestCase
         $this->assertDatabaseMissing('bank_accounts', ['id' => $account->id]);
     }
 
+    public function test_user_can_view_bank_account_movements_page(): void
+    {
+        $user = User::factory()->create();
+        $account = BankAccount::factory()->for($user)->create([
+            'type' => 'savings',
+            'balance' => '42.00',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('bank-accounts.movements', $account->id))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard/BankAccountMovements')
+                ->where('account.id', $account->id)
+                ->where('account.type', 'savings')
+            );
+    }
+
+    public function test_user_cannot_view_movements_of_another_users_bank_account(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $account = BankAccount::factory()->for($userA)->create();
+
+        $this->actingAs($userB)
+            ->get(route('bank-accounts.movements', $account->id))
+            ->assertNotFound();
+    }
+
     public function test_user_cannot_alter_another_users_bank_account(): void
     {
         $userA = User::factory()->create();

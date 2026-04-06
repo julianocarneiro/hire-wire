@@ -16,7 +16,7 @@
             >
                 <h2 id="new-account-title" class="text-lg font-semibold text-text">Nova conta</h2>
                 <p class="mt-1 text-sm text-text-muted">
-                    Escolha o tipo e, se quiser, o saldo inicial (predefinição: 0,00).
+                    Informe o tipo e o saldo inicial da conta.
                 </p>
                 <form class="mt-4 space-y-4" @submit.prevent="submit">
                     <div>
@@ -64,7 +64,7 @@
                             class="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-fg hover:opacity-90 disabled:opacity-60"
                             :disabled="form.processing"
                         >
-                            Guardar
+                            Salvar
                         </button>
                     </div>
                 </form>
