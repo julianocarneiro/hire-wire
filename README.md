@@ -112,17 +112,48 @@ O diretório **[src/](src/)** do repositório é montado em `/var/www/html` no s
    docker compose exec app php artisan passport:install
    ```
 
-5. API em **http://localhost:8000** (`php artisan serve` no serviço `app`). O Postgres fica exposto em **localhost:5432** para ferramentas como DBeaver.
+5. API em **http://localhost:8000** (`php artisan serve` no serviço `app`). O Postgres fica exposto em **localhost:5433** no host (mapeamento no `docker-compose.yml`; evita conflito com outro Postgres na 5432).
 
 Comandos úteis: `docker compose logs -f`, `docker compose down`. Para apagar também os dados do banco: `docker compose down -v`.
 
 Mais detalhes em [docs/infra.md](docs/infra.md).
 
-### Frontend e fluxo geral
+### Frontend (Vite + Vue 3 + Inertia)
 
-1. Configure o frontend em Vue.js (fora do Compose deste repositório, salvo se você adicionar um serviço Node).
-2. Ajuste URLs de API do frontend para o backend (por exemplo `http://localhost:8000`).
-3. Com backend e frontend em execução, acesse o sistema pelo frontend.
+O código do front-end fica em **[src/](src/)** (mesmo diretório do Laravel). O **Docker Compose só sobe o PHP**; o **Vite** (compilação e recarga em dev) roda na sua máquina com **Node.js** (recomenda-se LTS atual).
+
+#### Desenvolvimento (`npm run dev`)
+
+1. Com o backend acessível (por exemplo `docker compose up` e API em **http://localhost:8000**).
+2. Na pasta do Laravel:
+
+   ```bash
+   cd src
+   npm install
+   npm run dev
+   ```
+
+3. Deixe o processo do Vite **em execução**. Ele costuma usar a porta **5173** e o Laravel injeta os scripts via `@vite` em `resources/views/app.blade.php`.
+4. Abra a aplicação em **http://localhost:8000**. Alterações em `.vue` e em `resources/js` são recompiladas (HMR/recarga).
+
+Se a página não carregar os assets ou aparecer erro de Vite, confira se `npm run dev` está rodando e se não há bloqueio de firewall na porta do Vite.
+
+#### Build de produção (`npm run build`)
+
+Para gerar os ficheiros estáticos em `public/build/` (sem precisar do servidor Vite em runtime):
+
+```bash
+cd src
+npm install
+npm run build
+```
+
+Depois do build, o PHP pode servir só o que está em `public/build/` — útil em deploy ou quando **não** quiser manter `npm run dev` ligado. Volte a executar `npm run build` sempre que alterar o front antes de publicar.
+
+#### Fluxo geral
+
+- **Dev:** `docker compose up` + `npm run dev` em `src/`.
+- **API/base URL:** o dashboard Inertia usa as mesmas rotas web do Laravel em **http://localhost:8000**; a API OAuth2 (Passport) segue as rotas configuradas em `routes/api.php` na mesma base, se o cliente for externo.
 
 ---
 

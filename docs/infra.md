@@ -17,9 +17,11 @@ Stack mínima com **dois** serviços: container da aplicação PHP/Laravel (`app
 | Onde | Porta |
 |------|--------|
 | API (Laravel) | [http://localhost:8000](http://localhost:8000) |
-| Postgres (host, ex.: DBeaver) | `localhost:5432` |
+| Postgres (host, ex.: DBeaver, `psql` no SO) | `localhost:5433` |
 
-Na rede interna do Compose, o host do banco no Laravel deve ser o **nome do serviço** `db`, não `localhost`.
+Na rede interna do Compose, o Laravel no container usa **`db`** na porta **5432** (porta do processo Postgres dentro do container). Só no host você usa **`localhost:5433`** (porta publicada no `docker-compose.yml`).
+
+Se você rodar o Laravel **fora** do Docker e apontar para o Postgres do Compose, use `DB_HOST=127.0.0.1` e `DB_PORT=5433` no `src/.env`.
 
 O serviço `app` usa `depends_on` com **`condition: service_healthy`** no `db`, para o Postgres aceitar conexões antes do container da aplicação subir. O `db` expõe um *healthcheck* com `pg_isready`.
 

@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Domain\Banking\Repositories\BankAccountRepositoryInterface;
+use App\Infrastructure\Banking\EloquentBankAccountRepository;
 use Carbon\CarbonInterval;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 
@@ -13,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(BankAccountRepositoryInterface::class, EloquentBankAccountRepository::class);
     }
 
     /**
@@ -21,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Authenticate::redirectUsing(fn () => route('login'));
+
+        RedirectIfAuthenticated::redirectUsing(fn () => route('dashboard'));
+
         if (! $this->app->isProduction()) {
             Passport::$validateKeyPermissions = false;
         }
