@@ -65,11 +65,64 @@ Este sistema foi desenvolvido para avaliar as habilidades de desenvolvimento dos
 Este code test não foi feito para avaliar o quão bem você conhece PHP, mas sim para explorar suas habilidades com Laravel e, acima de tudo, seu domínio em programação orientada a objetos no **modo hard**. Prepare-se para brilhar! 😎
 
 ## 🏁 Como Usar
+
 1. Clone este repositório.
-2. Configure o backend em Laravel e o frontend em Vue.js.
-3. Configure o Laravel Passport para autenticação.
-4. Execute os comandos de migração para configurar o banco de dados.
-5. Inicie o servidor backend e frontend para acessar o sistema.
+
+### Backend com Docker (Laravel + PostgreSQL)
+
+O diretório **[src/](src/)** do repositório é montado em `/var/www/html` no serviço `app`. É necessário ter **Docker** e **Docker Compose v2** instalados.
+
+1. Na primeira vez, gere o Laravel dentro de `src` (diretório vazio), a partir da raiz do repositório:
+
+   ```bash
+   docker compose build
+   docker compose run --rm --no-deps -e COMPOSER_PROCESS_TIMEOUT=0 app composer create-project laravel/laravel .
+   ```
+
+   Em conexões lentas, o `COMPOSER_PROCESS_TIMEOUT=0` evita falha por limite de tempo (300s) do Composer. Se a criação parar pela metade, rode: `docker compose run --rm --no-deps -e COMPOSER_PROCESS_TIMEOUT=0 app composer install --no-interaction`.
+
+   Se `src` já tiver o projeto, pule este passo.
+
+2. No arquivo **`src/.env`**, use PostgreSQL com host **`db`** (nome do serviço no Compose), por exemplo:
+
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=db
+   DB_PORT=5432
+   DB_DATABASE=hire_wire
+   DB_USERNAME=hire_wire
+   DB_PASSWORD=hire_wire_secret
+   ```
+
+   Os valores acima coincidem com as variáveis `POSTGRES_*` definidas no `docker-compose.yml`. Altere em um só lugar se quiser credenciais diferentes.
+
+3. Suba os containers:
+
+   ```bash
+   docker compose build
+   docker compose up -d
+   ```
+
+4. Dentro do container da aplicação:
+
+   ```bash
+   docker compose exec app composer install
+   docker compose exec app php artisan key:generate
+   docker compose exec app php artisan migrate
+   docker compose exec app php artisan passport:install
+   ```
+
+5. API em **http://localhost:8000** (`php artisan serve` no serviço `app`). O Postgres fica exposto em **localhost:5432** para ferramentas como DBeaver.
+
+Comandos úteis: `docker compose logs -f`, `docker compose down`. Para apagar também os dados do banco: `docker compose down -v`.
+
+Mais detalhes em [docs/infra.md](docs/infra.md).
+
+### Frontend e fluxo geral
+
+1. Configure o frontend em Vue.js (fora do Compose deste repositório, salvo se você adicionar um serviço Node).
+2. Ajuste URLs de API do frontend para o backend (por exemplo `http://localhost:8000`).
+3. Com backend e frontend em execução, acesse o sistema pelo frontend.
 
 ---
 
