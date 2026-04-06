@@ -29,7 +29,21 @@ As migrations padrão do Laravel já contemplam:
 | `sessions` | Manter conforme framework |
 | `cache`, `jobs` (e filas) | Conforme migrations do projeto |
 
-**Passport (OAuth2):** tabelas criadas por `php artisan passport:install` (ex.: `oauth_clients`, `oauth_access_tokens`, …). Não duplicar aqui; tratar como **infraestrutura de autenticação**, não como modelo de negócio.
+### Passport (OAuth2) — infraestrutura
+
+Tabelas introduzidas pelas migrações do **Laravel Passport** (publicação + `php artisan migrate`, fluxo tipo `passport:install` conforme a versão). **Não** copiar coluna a coluna neste documento: manter como referência única as migrações do projeto e a [especificação OAuth2 / Passport](laravel_passport_oauth2.md) (fluxos, escopos, configuração).
+
+Tratar como **infraestrutura de autenticação/autorização**, não como modelo de negócio; o diagrama ER da secção 6 permanece só para agregados de produto.
+
+| Tabela | Propósito (resumo) |
+|--------|--------------------|
+| `oauth_auth_codes` | Códigos de autorização trocados no fluxo Authorization Code (incl. PKCE). |
+| `oauth_access_tokens` | Access tokens emitidos; metadados como escopos, revogação e expiração. |
+| `oauth_refresh_tokens` | Refresh tokens associados a access tokens quando o fluxo os utiliza. |
+| `oauth_clients` | Registo de clientes OAuth (públicos ou confidenciais). |
+| `oauth_device_codes` | Device authorization flow (quando aplicável ao Passport instalado). |
+
+**Ligação ao cadastro:** em fluxos centrados no utilizador (ex.: Authorization Code), `oauth_access_tokens.user_id` identifica o **resource owner** no mesmo universo que `users.id`. Em fluxos só cliente (ex.: client credentials), `user_id` pode ser nulo — alinhado às migrações Passport do projeto.
 
 ---
 
@@ -49,6 +63,8 @@ Além dos campos habituais do Laravel, o produto exige:
 | `created_at`, `updated_at` | timestamp | |
 
 **Índices sugeridos:** `UNIQUE (cpf)`, `UNIQUE (email)` já cobrem buscas por credencial.
+
+**OAuth2 (Passport):** access tokens e restantes artefactos OAuth residem nas tabelas `oauth_*`; **não** se espera coluna de API token na própria `users` (evitar o padrão legacy `api_token` na tabela de utilizador).
 
 **Migração:** pode ser `Schema::table('users', ...)` em nova migration se `users` já existir sem `cpf`.
 
@@ -128,6 +144,33 @@ erDiagram
   }
 ```
 
+### 6.1 Diagrama opcional — infra OAuth2 (Passport)
+
+Referência apenas para visão DBA; **não** confundir com agregados de negócio da secção 6.
+
+```mermaid
+erDiagram
+  users ||--o{ oauth_access_tokens : "resource_owner"
+  oauth_clients ||--o{ oauth_access_tokens : client_id
+
+  users {
+    bigint id PK
+  }
+
+  oauth_clients {
+    uuid id PK
+  }
+
+  oauth_access_tokens {
+    string id PK
+    bigint user_id FK "nullable"
+    uuid client_id FK
+    text scopes
+    boolean revoked
+    datetime expires_at
+  }
+```
+
 ---
 
 ## 7. Regras de negócio vs colunas
@@ -143,6 +186,8 @@ As regras de **depósito** (incremento de R$ 0,50 em corrente/investimentos) e *
 - [ ] FKs e `ON DELETE` coerentes com política de exclusão?
 - [ ] Precision de `decimal` suficiente para saldos e somatórios esperados no teste?
 - [ ] Índices para consultas reais (por `user_id`, por `id` junto de `user_id` na API)?
+- [ ] Migrações Passport aplicadas e consistentes com a versão fixada em `composer.lock`?
+- [ ] Revogação e ciclo de vida de tokens alinhados ao comportamento do Passport (sem duplicar regras de negócio neste documento)?
 
 ---
 

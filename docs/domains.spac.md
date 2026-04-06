@@ -46,6 +46,12 @@ Documento de referência para modelar o **núcleo de negócio** do sistema de co
 - Depósito em **Corrente** e **Investimentos:** crédito de `valor + R$ 0,50`.
 - Correção mensal: multiplicar saldo por `(1 + taxa)`, com taxas fixas por tipo conforme README.
 
+### 2.3 Identidade autenticada (OAuth2) e modelo de domínio
+
+- O **Domain** mantém a entidade `User` como agregado de **cadastro** e regras de unicidade (CPF, e-mail, etc.). **Não** modelar aqui `OAuthClient`, access/refresh tokens, nem tabelas `oauth_*` ([detalhe no esquema](tables.spac.md)).
+- Depois da validação do **Bearer token** (Passport, guard `api`), a **camada Application / HTTP** resolve o utilizador autenticado — p.ex. um `users.id` estável que o Domain já trata como identidade do `User`. **OAuth2 é o mecanismo de entrada** na API; **não** é o núcleo dos casos de uso de contas ou depósito.
+- **Escopos** (ex.: `read:accounts`, `write:accounts` — ver [especificação OAuth2 / Passport](laravel_passport_oauth2.md)) são **autorização na fronteira**: middleware Passport, policies ou equivalente. **Não** incorporar listas de escopos ou invariantes OAuth dentro das entidades `User` ou `BankAccount`.
+
 ---
 
 ## 3. Namespace e pastas (alvo)
@@ -78,7 +84,7 @@ Novos contextos = novas árvores sob `Domain\{Context}`; não misturar agregados
 | `Request`, `JsonResponse`, rotas | `app/Http` |
 | Eloquent `Model`, `DB::`, Query Builder | `Infrastructure` (repositórios concretos) |
 | `DB::transaction`, jobs, mail | `Application` (casos de uso) |
-| Clients HTTP, filas, Passport | `Infrastructure` |
+| Clients HTTP, filas, Passport | `Infrastructure` (ver [laravel_passport_oauth2.md](laravel_passport_oauth2.md)) |
 
 ---
 
@@ -87,6 +93,8 @@ Novos contextos = novas árvores sob `Domain\{Context}`; não misturar agregados
 - **Application** orquestra: `RegisterUser`, `OpenBankAccount` (se aplicável), `DepositFunds`, `GetAccountBalance`, `ApplyMonthlyAdjustment` (para uma conta ou lote, conforme produto), sempre com transação quando houver múltiplas escritas.
 - **Infrastructure** implementa repositórios: mapeamento **entidade ↔ modelo Eloquent** (`toDomain` / `toModel` no repositório concreto).
 - **Controllers** apenas validam entrada (Form Requests), autorizam (Policies) e chamam um caso de uso por ação.
+
+Fluxos OAuth2, escopos, clientes e critérios de aceitação da API protegida estão especificados em [laravel_passport_oauth2.md](laravel_passport_oauth2.md); evitar duplicar essa lista neste documento.
 
 ---
 
@@ -102,6 +110,7 @@ Para cada nova regra ou política no domínio, preferir **testes unitários** (P
 - [ ] Políticas de depósito e correção estão centralizadas e cobertas por tipo de conta?
 - [ ] Interfaces de repositório estão no `Domain`; sem imports de Laravel/Eloquent?
 - [ ] Exceções de domínio são específicas e sem referência a HTTP?
+- [ ] Casos de uso que exigem utilizador assumem identidade já autenticada na fronteira; **sem** lógica OAuth ou de tokens dentro de entidades de domínio?
 
 ---
 
