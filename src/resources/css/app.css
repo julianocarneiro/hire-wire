@@ -1,12 +1,42 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 @source '../**/*.vue';
 
+:root {
+    --hw-page: #f8fafc;
+    --hw-surface: #ffffff;
+    --hw-border: #e2e8f0;
+    --hw-text: #0f172a;
+    --hw-text-muted: #475569;
+    --hw-primary: #0f172a;
+    --hw-primary-fg: #ffffff;
+}
+
+.dark {
+    --hw-page: #0f172a;
+    --hw-surface: #1e293b;
+    --hw-border: #334155;
+    --hw-text: #f8fafc;
+    --hw-text-muted: #94a3b8;
+    --hw-primary: #e2e8f0;
+    --hw-primary-fg: #0f172a;
+}
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-page: var(--hw-page);
+    --color-surface: var(--hw-surface);
+    --color-border: var(--hw-border);
+    --color-text: var(--hw-text);
+    --color-text-muted: var(--hw-text-muted);
+    --color-primary: var(--hw-primary);
+    --color-primary-fg: var(--hw-primary-fg);
 }

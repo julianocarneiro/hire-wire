@@ -1,8 +1,8 @@
 <template>
     <AppLayout>
         <div class="space-y-2">
-            <h1 class="text-xl font-semibold text-slate-900">Conta bancária</h1>
-            <p v-if="account" class="text-sm text-slate-600">
+            <h1 class="text-xl font-semibold text-text">Conta bancária</h1>
+            <p v-if="account" class="text-sm text-text-muted">
                 Tipo: {{ account.type }} · Saldo: {{ account.balance }}
             </p>
         </div>

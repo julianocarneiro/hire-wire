@@ -140,6 +140,7 @@ resources/js/
 - Entrada CSS típica na v4: **`@import "tailwindcss";`** no arquivo principal de estilos (ex.: `app.css`), com **plugin Vite** `@tailwindcss/vite` — alinhar ao `vite.config` do repositório.
 - Preferir **classes utilitárias**; extrair padrões repetidos para **componentes Vue**; usar **`@apply`** só quando reduzir ruído real (a v4 incentiva composição utilitária no markup).
 - **Tema / design tokens:** usar **variáveis CSS** e recursos da v4 (`@theme`, etc.) para cores, fontes e raios; evitar “valores mágicos” espalhados sem nome semântico quando o time definir tokens.
+- **Tema claro / escuro (Fase 6):** modo por classe `dark` no `<html>`; chave `hire-wire-theme` no `localStorage`; toggles em `GuestLayout` e `AppLayout` via **`Components/ThemeToggle.vue`** e composable **`composables/useTheme.js`**. Preferir tokens globais (`bg-page`, `bg-surface`, `text-text`, `border-border`, `bg-primary`, …) em vez de paletas fixas (`slate-*`) para fundos e texto principal. Detalhe completo, checklist de novas telas e regra do script anti-FOUC: **[theme.spec.md](../theme.spec.md)** (na raiz de `docs/`).
 - **Acessibilidade:** foco visível, `aria-*` em interativos customizados, rótulos em inputs.
 - **Responsivo:** mobile-first (`sm:`, `md:`) coerente com o layout principal.
 - Ao consultar exemplos na internet, **verificar se são para v3 ou v4** (há diferenças de configuração e de features).
@@ -177,6 +178,7 @@ resources/js/
 - [ ] Componentes reutilizáveis estão **desacoplados** de uma rota específica?
 - [ ] Não há lógica de negócio duplicando invariantes que já existem no **Domain/Application** do backend?
 - [ ] **Acessibilidade** básica atendida (labels, foco, botões reais)?
+- [ ] Novas superfícies usam **tokens de tema** (`bg-page`, `text-text`, …) onde aplicável — ver [theme.spec.md](../theme.spec.md)?
 - [ ] Build/local: `npm run build` / `npm run dev` sem erros relevantes?
 
 ---
