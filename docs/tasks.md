@@ -15,3 +15,10 @@ Fase 2: Especificar padrões de código
 [x] 3. Design Paterns
 [x] 4. Checklist para Revisão
 [x] 5. Especificação de testes
+
+Fase 3: Definição de dominio e tabelas
+[x] 1. Especificar camada de dominio
+[x] 2. Especificar tabelas
+[x] 3. Criar migratins
+[x] 4. Criar camada de dominio
+[x] 5. Criar testes da camada de dominio
