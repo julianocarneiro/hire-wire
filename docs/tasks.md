@@ -30,6 +30,6 @@ https://github.com/julianocarneiro/hire-wire
 
 ## Fase 4
 
-⬜ Criar migrations
-⬜ Criar camada de dominio
-⬜ Criar testes da camada de dominio
+✅ Criar migrations
+✅ Criar camada de dominio
+✅ Criar testes da camada de dominio
