@@ -20,7 +20,16 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::post('bank-accounts', [BankAccountController::class, 'store'])
+        ->middleware('throttle:20,1')
+        ->name('bank-accounts.store');
     Route::get('bank-accounts/{id}', [BankAccountController::class, 'show'])
         ->whereNumber('id')
         ->name('bank-accounts.show');
+    Route::patch('bank-accounts/{id}', [BankAccountController::class, 'update'])
+        ->whereNumber('id')
+        ->name('bank-accounts.update');
+    Route::delete('bank-accounts/{id}', [BankAccountController::class, 'destroy'])
+        ->whereNumber('id')
+        ->name('bank-accounts.destroy');
 });

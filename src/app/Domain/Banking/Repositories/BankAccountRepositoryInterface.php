@@ -8,9 +8,16 @@ use App\Domain\Banking\ValueObjects\UserId;
 
 interface BankAccountRepositoryInterface
 {
+    /**
+     * @return list<BankAccount>
+     */
+    public function listForUser(UserId $userId): array;
+
     public function findByIdForUser(BankAccountId $id, UserId $userId): ?BankAccount;
 
     public function findByIdForUpdate(BankAccountId $id, UserId $userId): ?BankAccount;
 
     public function save(BankAccount $account): void;
+
+    public function delete(BankAccountId $id, UserId $userId): bool;
 }

@@ -10,14 +10,15 @@ use App\Domain\Banking\ValueObjects\BankAccountId;
 use App\Domain\Banking\ValueObjects\Money;
 use App\Domain\Banking\ValueObjects\UserId;
 
-final class BankAccount
+abstract class BankAccount
 {
     public function __construct(
         private ?BankAccountId $id,
         private readonly UserId $userId,
-        private readonly AccountType $type,
         private Money $balance,
     ) {}
+
+    abstract public function accountType(): AccountType;
 
     public function id(): ?BankAccountId
     {
@@ -31,7 +32,7 @@ final class BankAccount
 
     public function type(): AccountType
     {
-        return $this->type;
+        return $this->accountType();
     }
 
     public function balance(): Money
@@ -47,18 +48,23 @@ final class BankAccount
         $this->id = $id;
     }
 
+    public function replaceBalance(Money $balance): void
+    {
+        $this->balance = $balance;
+    }
+
     public function deposit(Money $statedAmount, AccountDepositPolicy $depositPolicy): void
     {
         if (! $statedAmount->greaterThanZero()) {
             throw new InvalidDepositAmountException('Deposit amount must be greater than zero.');
         }
 
-        $credited = $depositPolicy->creditedAmount($this->type, $statedAmount);
+        $credited = $depositPolicy->creditedAmount($this->accountType(), $statedAmount);
         $this->balance = $this->balance->add($credited);
     }
 
     public function applyMonthlyAdjustment(MonthlyAdjustmentPolicy $policy): void
     {
-        $this->balance = $policy->adjust($this->type, $this->balance);
+        $this->balance = $policy->adjust($this->accountType(), $this->balance);
     }
 }

@@ -70,3 +70,15 @@ https://github.com/julianocarneiro/hire-wire
 
 - (Opcional) **Multi-tab:** listener `storage` para alinhar o tema entre separadores.
 - (Opcional) **Testes:** Vitest no composable ou E2E (Playwright) no fluxo do toggle.
+
+## Fase 7: Crud de Contas
+
+✅ **Domínio com herança:** entidade abstrata `BankAccount` (`App\Domain\Banking\Entities\BankAccount`) com `accountType()`; subclasses `SavingsAccount`, `CheckingAccount`, `InvestmentsAccount`; `BankAccountEntityFactory` para instanciar o tipo correto a partir do valor persistido.
+✅ **Contrato do repositório:** `listForUser(UserId)` e `delete(BankAccountId, UserId)`; `EloquentBankAccountRepository` mapeia linhas para subclasses via factory; `replaceBalance` na entidade para atualização controlada do saldo.
+✅ **Rotas HTTP (autenticadas):** `POST /bank-accounts` (criar, throttle), `GET /bank-accounts/{id}` (detalhe), `PATCH /bank-accounts/{id}` (atualizar saldo), `DELETE /bank-accounts/{id}` (eliminar); nomes de rota `bank-accounts.*`.
+✅ **Validação:** `StoreBankAccountRequest` (tipo enumerado + `unique` por `user_id`+`type`); `UpdateBankAccountRequest` (saldo numérico ≥ 0).
+✅ **Inertia — props partilhadas:** `HandleInertiaRequests` expõe `bankAccounts` (lista do utilizador) e `accountTypeOptions` (valor + etiqueta PT) em páginas autenticadas; lista da sidebar atualiza após criar (redirect `back()`).
+✅ **Layout:** `AppLayout` com sidebar — ação «Nova conta» e lista de contas com `Link` para o detalhe; destaque da conta ativa pela URL.
+✅ **Modal «Nova conta»:** `NewBankAccountModal.vue` — select de tipo, saldo inicial opcional, `POST` via Inertia; ao sucesso fecha o modal e renova dados partilhados.
+✅ **Detalhe da conta:** `BankAccountShow.vue` — formulário de saldo (`PATCH`), secção eliminar (`DELETE` com confirmação, redirect ao dashboard).
+✅ **Testes:** `BankAccountCrudTest` (props no dashboard, CRUD, duplicado de tipo, isolamento entre utilizadores); `BankAccountTest` atualizado para factory + asserções das subclasses.

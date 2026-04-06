@@ -1,0 +1,26 @@
+---
+description: Commit messages in English; PowerShell-friendly shell commands (use ; not &&)
+alwaysApply: true
+---
+
+# Commits and terminal conventions
+
+## Git commit titles and descriptions
+
+- When suggesting **commit titles** (subject lines) or **commit bodies**, use **English** by default — concise, imperative mood for the subject (e.g. `feat: add account CRUD`, `fix: validate balance on update`).
+- Project docs, UI copy, and user-facing text may remain in **Portuguese** or another locale when that is the product language; this rule applies specifically to **commit messages** and **PR titles** you propose.
+
+## Shell commands (Windows / PowerShell)
+
+- This environment often uses **PowerShell**, where `&&` is not a valid statement separator in older versions.
+- When running or proposing chained commands, **connect steps with `;`** instead of `&&`, and avoid `||` unless you confirm the shell supports it.
+
+```powershell
+# Prefer
+Set-Location "d:\project\src"; php artisan test
+
+# Avoid
+cd d:\project\src && php artisan test
+```
+
+- For a single working directory: set location first, then run the command on the next statement separated by `;`.
