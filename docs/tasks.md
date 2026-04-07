@@ -95,29 +95,31 @@ https://github.com/julianocarneiro/hire-wire
 
 ## Fase 9: Organização, otimização, componentização e mais testes
 
+**Especificação:** [organization_optimization.spec.md](organization_optimization.spec.md) (objetivo, escopo, organização back/front, otimização, componentização Vue, testes e checklist de aceitação).
+
 ### Organização
 
-- Rever **estrutura de pastas** (`App\Domain`, `App\Application`, `App\Infrastructure`, `Http`) e alinhar nomes de ficheiros às convenções já documentadas em [paterns](paterns/).
-- **Rotas e controllers:** agrupar ou documentar no código (PHPDoc breve) responsabilidades por recurso; avaliar controller dedicado a movimentações se `BankAccountController` crescer demais.
-- **Front-end:** convenção para `Components/` vs `Pages/` (componentes reutilizáveis vs ecrãs Inertia); extrair constantes partilhadas (etiquetas, rotas) onde fizer sentido.
-- **Documentação:** atualizar [README.md](../README.md) ou [docs/infra.md](infra.md) se o fluxo de desenvolvimento mudar; manter `tasks.md` sincronizado com o estado real do projeto.
+✅ Rever **estrutura de pastas** (`App\Domain`, `App\Application`, `App\Infrastructure`, `Http`) e alinhar nomes de ficheiros às convenções já documentadas em [paterns](paterns/) — revista mínima; sem mudanças estruturais largas.
+✅ **Rotas e controllers:** `BankAccountMovementController` (movimentações, depósito, correção); `BankAccountController` só CRUD; PHPDoc de classe nos controllers e em `HandleInertiaRequests`.
+✅ **Front-end:** `Components/` (`BankAccountPageHeader`, `AccountMovementsTable`) vs `Pages/`; composables `useCurrencyFormat`, `useBankAccountLabels`, `useAccountTabsThree`.
+✅ **Documentação:** `tasks.md` e [organization_optimization.spec.md](organization_optimization.spec.md) actualizados; README/infra inalterados (fluxo de dev igual).
 
 ### Otimização
 
-- **Base de dados:** rever consultas em repositórios Eloquent (índices em `user_id`, `bank_account_id`, `created_at` onde a listagem for frequente); evitar N+1 se surgirem relações carregadas em listas.
-- **HTTP / Inertia:** payload mínimo nas props; evitar duplicar dados já presentes em `shared` quando possível.
-- **Front (Vite):** `npm run build` e análise de bundle (tamanho de chunks); lazy-loading de páginas Inertia (`resolve` com import dinâmico) se o número de páginas crescer.
-- **Back:** cache de leitura só onde houver ganho mensurável e invalidação clara (evitar prematuramente).
+✅ **Base de dados:** índice composto `account_movements (bank_account_id, created_at)`; listagem de movimentos sem N+1 por linha.
+✅ **HTTP / Inertia:** mantida prop `account` nas páginas de detalhe/movimentações (saldo fresco após mutações); nota na spec.
+✅ **Front (Vite):** `npm run build` com baseline registada na spec; `import.meta.glob` mantido.
+✅ **Back:** sem cache de leitura (conforme spec).
 
 ### Componentização
 
-- Extrair **componentes Vue** reutilizáveis: por exemplo cabeçalho de conta (tipo + saldo), tabela de movimentos, bloco de tabs acessível, botões de ação alinhados ao tema.
-- Extrair **composables** (`useBankAccountLabels`, `useCurrencyFormat`, `useAccountTabs`) para reduzir duplicação entre `BankAccountShow`, `BankAccountMovements` e sidebar.
-- Opcional: componente **genérico de tabs** (ARIA) reutilizável em futuras telas.
+✅ **Componentes Vue:** cabeçalho de conta e tabela de movimentos extraídos.
+✅ **Composables:** `useBankAccountLabels`, `useCurrencyFormat`, `useAccountTabsThree`.
+- (Opcional) **Tabs genérico** ARIA reutilizável — não implementado; lógica permanece na página + composable de três separadores.
 
 ### Mais testes
 
-- **Feature:** fluxos completos Inertia (depósito + correção na mesma conta; lista de movimentos após várias operações); utilizador não autenticado em `POST` depósito/correção; throttle (smoke).
-- **Unit / integração:** `BankAccountMovementService` ou repositório de movimentos com dependências isoladas (mock do repositório de contas, se aplicável).
-- **Domínio:** casos-limite adicionais (`Money`, políticas) se surgirem novas regras.
-- **Opcional:** testes de browser (Playwright/Laravel Dusk) para login + criação de conta + depósito; ou Vitest para composables Vue.
+✅ **Feature:** fluxo depósito + correção + ordem na lista; guest em `POST` depósito/correção; smoke throttle nas rotas nomeadas.
+✅ **Unit:** `BankAccountMovementServiceTest` com mocks dos repositórios.
+- **Domínio:** casos-limite adicionais (`Money`, políticas) — apenas se surgirem novas regras (inalterado).
+- **Opcional:** Playwright/Dusk ou Vitest para composables — fora do âmbito desta entrega.

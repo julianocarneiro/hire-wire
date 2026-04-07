@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\BankAccountMovementController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,14 +24,14 @@ Route::middleware('auth')->group(function () {
     Route::post('bank-accounts', [BankAccountController::class, 'store'])
         ->middleware('throttle:20,1')
         ->name('bank-accounts.store');
-    Route::get('bank-accounts/{id}/movimentacoes', [BankAccountController::class, 'movements'])
+    Route::get('bank-accounts/{id}/movimentacoes', [BankAccountMovementController::class, 'movements'])
         ->whereNumber('id')
         ->name('bank-accounts.movements');
-    Route::post('bank-accounts/{id}/deposito', [BankAccountController::class, 'deposit'])
+    Route::post('bank-accounts/{id}/deposito', [BankAccountMovementController::class, 'deposit'])
         ->middleware('throttle:20,1')
         ->whereNumber('id')
         ->name('bank-accounts.deposit');
-    Route::post('bank-accounts/{id}/correcao-monetaria', [BankAccountController::class, 'applyMonthlyAdjustment'])
+    Route::post('bank-accounts/{id}/correcao-monetaria', [BankAccountMovementController::class, 'applyMonthlyAdjustment'])
         ->middleware('throttle:20,1')
         ->whereNumber('id')
         ->name('bank-accounts.monthly-adjustment');

@@ -68,6 +68,10 @@ Este code test não foi feito para avaliar o quão bem você conhece PHP, mas si
 
 1. Clone este repositório.
 
+**Rodar a aplicação:** na raiz do repositório, suba os serviços com Docker Compose (PHP + PostgreSQL) e execute migrations/Passport dentro do container — a interface web fica em **http://localhost:8000** (detalhes abaixo).
+
+**Build do front-end:** na pasta **[src/](src/)**, com Node.js instalado no host, use `npm install` e depois **`npm run dev`** (desenvolvimento, HMR) ou **`npm run build`** (gera `public/build/` para produção, sem servidor Vite).
+
 ### Backend com Docker (Laravel + PostgreSQL)
 
 O diretório **[src/](src/)** do repositório é montado em `/var/www/html` no serviço `app`. É necessário ter **Docker** e **Docker Compose v2** instalados.
@@ -96,14 +100,22 @@ O diretório **[src/](src/)** do repositório é montado em `/var/www/html` no s
 
    Os valores acima coincidem com as variáveis `POSTGRES_*` definidas no `docker-compose.yml`. Altere em um só lugar se quiser credenciais diferentes.
 
-3. Suba os containers:
+3. **Pasta de dados do PostgreSQL (obrigatória no host):** o `docker-compose.yml` monta **`docker-data/postgres/`** na raiz do repositório como volume do Postgres. Essa pasta **não vem no clone** (está no `.gitignore`). **Crie-a antes do primeiro `docker compose up`**, mesmo que fique vazia — em vários ambientes o bind mount falha se o caminho no host não existir.
+
+   ```bash
+   mkdir -p docker-data/postgres
+   ```
+
+   No PowerShell: `New-Item -ItemType Directory -Force -Path docker-data/postgres`
+
+4. Suba os containers:
 
    ```bash
    docker compose build
    docker compose up -d
    ```
 
-4. Dentro do container da aplicação:
+5. Dentro do container da aplicação:
 
    ```bash
    docker compose exec app composer install
@@ -112,7 +124,7 @@ O diretório **[src/](src/)** do repositório é montado em `/var/www/html` no s
    docker compose exec app php artisan passport:install
    ```
 
-5. API em **http://localhost:8000** (`php artisan serve` no serviço `app`). O Postgres fica exposto em **localhost:5433** no host (mapeamento no `docker-compose.yml`; evita conflito com outro Postgres na 5432).
+6. API em **http://localhost:8000** (`php artisan serve` no serviço `app`). O Postgres fica exposto em **localhost:5433** no host (mapeamento no `docker-compose.yml`; evita conflito com outro Postgres na 5432).
 
 Comandos úteis: `docker compose logs -f`, `docker compose down`. Os dados do PostgreSQL persistem na pasta **`docker-data/postgres/`** no repositório (bind mount; ver [docs/infra.md](docs/infra.md)). Para zerar o banco, apague essa pasta com os containers parados — `docker compose down -v` já não remove esses ficheiros.
 

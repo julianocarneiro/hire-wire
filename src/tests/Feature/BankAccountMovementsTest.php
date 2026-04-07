@@ -6,6 +6,7 @@ use App\Models\BankAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class BankAccountMovementsTest extends TestCase
@@ -165,5 +166,87 @@ class BankAccountMovementsTest extends TestCase
             'id' => $account->id,
             'balance' => '1.00',
         ]);
+    }
+
+    public function test_guest_cannot_post_deposit(): void
+    {
+        $user = User::factory()->create();
+        $account = BankAccount::factory()->for($user)->create(['balance' => '10.00']);
+
+        $this->post(route('bank-accounts.deposit', $account->id), [
+            'amount' => '25.00',
+        ])->assertRedirect();
+
+        $this->assertGuest();
+
+        $this->assertDatabaseHas('bank_accounts', [
+            'id' => $account->id,
+            'balance' => '10.00',
+        ]);
+        $this->assertSame(0, DB::table('account_movements')->where('bank_account_id', $account->id)->count());
+    }
+
+    public function test_guest_cannot_post_monthly_adjustment(): void
+    {
+        $user = User::factory()->create();
+        $account = BankAccount::factory()->for($user)->create([
+            'type' => 'savings',
+            'balance' => '1000.00',
+        ]);
+
+        $this->post(route('bank-accounts.monthly-adjustment', $account->id))
+            ->assertRedirect();
+
+        $this->assertGuest();
+
+        $this->assertDatabaseHas('bank_accounts', [
+            'id' => $account->id,
+            'balance' => '1000.00',
+        ]);
+        $this->assertSame(0, DB::table('account_movements')->where('bank_account_id', $account->id)->count());
+    }
+
+    public function test_deposit_then_adjustment_lists_movements_newest_first(): void
+    {
+        $user = User::factory()->create();
+        $account = BankAccount::factory()->for($user)->create([
+            'type' => 'savings',
+            'balance' => '10000.00',
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('bank-accounts.deposit', $account->id), ['amount' => '50.00'])
+            ->assertRedirect();
+
+        $this->actingAs($user)
+            ->post(route('bank-accounts.monthly-adjustment', $account->id))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('bank_accounts', [
+            'id' => $account->id,
+            'balance' => '10050.10',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('bank-accounts.movements', $account->id))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Dashboard/BankAccountMovements')
+                ->has('movements', 2)
+                ->where('movements.0.type', 'monthly_adjustment')
+                ->where('movements.1.type', 'deposit'));
+    }
+
+    public function test_bank_account_mutation_routes_register_throttle_middleware(): void
+    {
+        foreach (['bank-accounts.store', 'bank-accounts.deposit', 'bank-accounts.monthly-adjustment'] as $name) {
+            $route = Route::getRoutes()->getByName($name);
+            $this->assertNotNull($route, $name);
+            $joined = implode(' ', $route->gatherMiddleware());
+            $this->assertTrue(
+                str_contains($joined, 'throttle') || str_contains($joined, 'Throttle'),
+                "Expected throttle middleware on route {$name}, got: {$joined}"
+            );
+        }
     }
 }

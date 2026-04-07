@@ -1,23 +1,17 @@
 <template>
     <AppLayout>
         <div class="space-y-6">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-                <div class="space-y-1">
-                    <h1 class="text-2xl font-semibold text-text">Conta bancária</h1>
-                    <p v-if="account" class="text-sm text-text-muted">
-                        <span class="font-medium text-text">{{ typeLabel }}</span>
-                        · saldo atual:
-                        <span class="tabular-nums text-text">{{ formatBalance(account.balance) }}</span>
-                    </p>
-                </div>
-                <Link
-                    v-if="account"
-                    :href="`/bank-accounts/${account.id}/movimentacoes`"
-                    class="shrink-0 rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text shadow-sm hover:bg-page focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-page"
-                >
-                    Movimentações
-                </Link>
-            </div>
+            <BankAccountPageHeader title="Conta bancária" :account="account">
+                <template #actions>
+                    <Link
+                        v-if="account"
+                        :href="`/bank-accounts/${account.id}/movimentacoes`"
+                        class="shrink-0 rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text shadow-sm hover:bg-page focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-page"
+                    >
+                        Movimentações
+                    </Link>
+                </template>
+            </BankAccountPageHeader>
 
             <section
                 v-if="account"
@@ -75,8 +69,9 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue';
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { watch } from 'vue';
+import { Link, router, useForm } from '@inertiajs/vue3';
+import BankAccountPageHeader from '../../Components/BankAccountPageHeader.vue';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
 const props = defineProps({
@@ -84,18 +79,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-});
-
-const page = usePage();
-
-const accountTypeOptions = computed(() => page.props.accountTypeOptions ?? []);
-
-const typeLabel = computed(() => {
-    const t = props.account?.type;
-    if (!t) {
-        return '';
-    }
-    return accountTypeOptions.value.find((o) => o.value === t)?.label ?? t;
 });
 
 const balanceForm = useForm({
@@ -108,14 +91,6 @@ watch(
         balanceForm.balance = b;
     },
 );
-
-function formatBalance(b) {
-    const n = Number.parseFloat(b);
-    if (Number.isNaN(n)) {
-        return b;
-    }
-    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
 
 function submitBalance() {
     balanceForm.patch(`/bank-accounts/${props.account.id}`, { preserveScroll: true });

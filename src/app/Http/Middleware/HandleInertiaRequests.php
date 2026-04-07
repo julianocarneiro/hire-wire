@@ -8,6 +8,10 @@ use App\Domain\Banking\ValueObjects\UserId;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
+/**
+ * Inertia shared data: auth snapshot, sidebar account list, and PT labels for account types.
+ * Individual pages still pass an `account` prop where a fresh balance is required after mutations.
+ */
 class HandleInertiaRequests extends Middleware
 {
     protected $rootView = 'app';

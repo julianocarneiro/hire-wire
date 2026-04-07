@@ -1,16 +1,8 @@
 <template>
     <AppLayout>
         <div class="space-y-6">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-                <div class="space-y-1">
-                    <h1 class="text-2xl font-semibold text-text">Movimentações</h1>
-                    <p v-if="account" class="text-sm text-text-muted">
-                        <span class="font-medium text-text">{{ typeLabel }}</span>
-                        · saldo atual:
-                        <span class="tabular-nums text-text">{{ formatBalance(account.balance) }}</span>
-                    </p>
-                </div>
-                <div class="flex shrink-0 flex-wrap gap-2">
+            <BankAccountPageHeader title="Movimentações" :account="account">
+                <template #actions>
                     <Link
                         v-if="account"
                         :href="`/bank-accounts/${account.id}`"
@@ -18,8 +10,8 @@
                     >
                         Detalhe da conta
                     </Link>
-                </div>
-            </div>
+                </template>
+            </BankAccountPageHeader>
 
             <div
                 v-if="account"
@@ -139,53 +131,7 @@
                         aria-labelledby="tab-lista"
                         tabindex="0"
                     >
-                        <div
-                            class="mb-4 rounded-md border border-border bg-page px-4 py-3"
-                            aria-live="polite"
-                        >
-                            <p class="text-xs font-medium text-text-muted">Saldo atual</p>
-                            <p class="text-2xl font-semibold tabular-nums text-text">
-                                {{ formatBalance(account.balance) }}
-                            </p>
-                        </div>
-                        <h2 class="text-sm font-semibold text-text">Histórico</h2>
-                        <p v-if="movements.length === 0" class="mt-2 text-sm text-text-muted">
-                            Ainda não há movimentações registadas para esta conta.
-                        </p>
-                        <div v-else class="mt-3 overflow-x-auto">
-                            <table class="w-full min-w-[28rem] border-collapse text-left text-sm">
-                                <thead>
-                                    <tr class="border-b border-border text-xs text-text-muted">
-                                        <th class="py-2 pr-4 font-medium">Data</th>
-                                        <th class="py-2 pr-4 font-medium">Tipo</th>
-                                        <th class="py-2 pr-4 font-medium text-right">Valor</th>
-                                        <th class="py-2 font-medium text-right">Saldo após</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        v-for="m in movements"
-                                        :key="m.id"
-                                        class="border-b border-border/80 text-text"
-                                    >
-                                        <td class="py-2 pr-4 tabular-nums text-text-muted">
-                                            {{ formatDate(m.created_at) }}
-                                        </td>
-                                        <td class="py-2 pr-4">{{ movementTypeLabel(m.type) }}</td>
-                                        <td class="py-2 pr-4 text-right tabular-nums">
-                                            {{ formatBalance(m.amount) }}
-                                        </td>
-                                        <td class="py-2 text-right tabular-nums text-text-muted">
-                                            {{
-                                                m.balance_after != null
-                                                    ? formatBalance(m.balance_after)
-                                                    : '—'
-                                            }}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <AccountMovementsTable :movements="movements" :current-balance="account.balance" />
                     </div>
 
                     <div
@@ -217,8 +163,10 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref } from 'vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
+import AccountMovementsTable from '../../Components/AccountMovementsTable.vue';
+import BankAccountPageHeader from '../../Components/BankAccountPageHeader.vue';
+import { useAccountTabsThree } from '../../composables/useAccountTabs';
 import AppLayout from '../../Layouts/AppLayout.vue';
 
 const props = defineProps({
@@ -232,84 +180,13 @@ const props = defineProps({
     },
 });
 
-const page = usePage();
-const accountTypeOptions = computed(() => page.props.accountTypeOptions ?? []);
-
-const typeLabel = computed(() => {
-    const t = props.account?.type;
-    if (!t) {
-        return '';
-    }
-    return accountTypeOptions.value.find((o) => o.value === t)?.label ?? t;
-});
-
-const activeTab = ref(0);
-const tabDepositRef = ref(null);
-const tabListRef = ref(null);
-const tabCorrecaoRef = ref(null);
-
-const tabRefs = [tabDepositRef, tabListRef, tabCorrecaoRef];
-
-function onTabKeydown(e) {
-    const key = e.key;
-    if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') {
-        return;
-    }
-    e.preventDefault();
-    const len = 3;
-    let next = activeTab.value;
-    if (key === 'ArrowRight') {
-        next = (activeTab.value + 1) % len;
-    } else if (key === 'ArrowLeft') {
-        next = (activeTab.value + len - 1) % len;
-    } else if (key === 'Home') {
-        next = 0;
-    } else {
-        next = len - 1;
-    }
-    activeTab.value = next;
-    nextTick(() => {
-        tabRefs[next]?.value?.focus();
-    });
-}
+const { activeTab, tabDepositRef, tabListRef, tabCorrecaoRef, onTabKeydown } = useAccountTabsThree();
 
 const depositForm = useForm({
     amount: '',
 });
 
 const adjustmentForm = useForm({});
-
-function formatBalance(b) {
-    const n = Number.parseFloat(b);
-    if (Number.isNaN(n)) {
-        return b;
-    }
-    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function formatDate(iso) {
-    if (!iso) {
-        return '';
-    }
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) {
-        return iso;
-    }
-    return d.toLocaleString('pt-BR', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-    });
-}
-
-function movementTypeLabel(type) {
-    if (type === 'deposit') {
-        return 'Depósito';
-    }
-    if (type === 'monthly_adjustment') {
-        return 'Correção monetária';
-    }
-    return type;
-}
 
 function submitDeposit() {
     depositForm.post(`/bank-accounts/${props.account.id}/deposito`, {
